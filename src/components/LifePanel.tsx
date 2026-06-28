@@ -24,6 +24,8 @@ export default function LifePanel({ years, thisYear, place, url }: Props) {
   const stats = lifeStats(years, clamped, upTo)
   const maxHot = Math.max(1, ...stats.perYear.map((y) => y.hotDays))
   const factor = stats.earlyAvg > 0 ? stats.recentAvg / stats.earlyAvg : null
+  // only compare decades when they don't overlap (≥20 lived years) and differ enough
+  const showTrend = factor != null && factor >= 1.15 && stats.yearsLived >= 20
 
   const lifeCard: ShareCard = {
     place,
@@ -31,11 +33,10 @@ export default function LifePanel({ years, thisYear, place, url }: Props) {
     tempText: String(stats.totalHotDays),
     unit: '',
     color: thermalForTemp(34),
-    verdict: `dni upalnych przeżyłem od ${clamped}`,
-    sub:
-      factor && factor >= 1.15
-        ? `To ×${factor.toFixed(1)} więcej niż w dzieciństwie · ${place} · ${stats.totalTropicalNights} nocy tropikalnych`
-        : `${place} · ${stats.totalTropicalNights} nocy tropikalnych · ${stats.yearsLived} lat`,
+    verdict: `dni upalnych (≥30°C) od ${clamped}`,
+    sub: showTrend
+      ? `Dni upalnych rocznie: ~${stats.earlyAvg.toFixed(0)} w dzieciństwie → ~${stats.recentAvg.toFixed(0)} dziś`
+      : `przez ${stats.yearsLived} lat · ${stats.totalTropicalNights} nocy tropikalnych`,
     forecast: false,
     url,
     chart: stats.perYear.map((y) => ({ year: y.year, tmax: y.hotDays })),
@@ -62,10 +63,10 @@ export default function LifePanel({ years, thisYear, place, url }: Props) {
         <b>{stats.totalHotDays}</b> dni upalnych (≥30°C) i <b>{stats.totalTropicalNights}</b> nocy
         tropikalnych — przez <b>{stats.yearsLived}</b> lat.
       </p>
-      {factor && factor >= 1.15 && (
+      {showTrend && (
         <p className="life-lead life-trend">
           Dni upalnych rocznie: w dzieciństwie ~<b>{stats.earlyAvg.toFixed(0)}</b>, dziś ~
-          <b>{stats.recentAvg.toFixed(0)}</b> — to <b>×{factor.toFixed(1)}</b> więcej.
+          <b>{stats.recentAvg.toFixed(0)}</b> — to <b>×{factor!.toFixed(1)}</b> więcej.
         </p>
       )}
 
