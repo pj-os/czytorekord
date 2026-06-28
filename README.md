@@ -30,6 +30,16 @@ npm run test:run # 51 testów (Vitest, w tym golden snapshoty)
 - `/o-projekcie` — metodologia (SSR)
 - `/sitemap.xml`, `/robots.txt` — generowane
 
+## Wdrożenie (Vercel)
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fpj-os%2Fczytorekord)
+
+1. Zaimportuj repo `pj-os/czytorekord` w Vercelu — framework **Next.js** wykryje się automatycznie (zero konfiguracji, brak zmiennych środowiskowych).
+2. Po deployu włącz **Analytics** w panelu projektu (zakładka *Analytics → Enable*) — `@vercel/analytics` jest już wpięte.
+3. Domena produkcyjna: `czytorekord.vercel.app` (ustawiona w metadanych, sitemap, robots i grafice udostępniania). Przy własnej domenie podmień ją w `app/layout.tsx`, `app/sitemap.ts`, `app/robots.ts` oraz `SHARE_SITE` w `src/share.ts`.
+
+Bez cookies i bez backendu — statystyki Vercela są anonimowe, więc baner zgody nie jest wymagany.
+
 ## Stack
 
 Next.js 14 (App Router) + React + TypeScript + Framer Motion. Logika pogodowa
