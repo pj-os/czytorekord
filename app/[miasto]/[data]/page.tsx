@@ -6,8 +6,17 @@ import { daySnapshot } from '../../../src/compute'
 import { dayLabel } from '../../../src/format'
 import { buildQuery } from '../../../src/url'
 
-// SSR on request — never fetch the archive at build time (would hit the API rate limit).
-export const dynamic = 'force-dynamic'
+// ISR: render once and cache, regenerate at most hourly. Pages build lazily on
+// first visit (no build-time fetch → build never hits the API rate limit), and
+// Next dedupes the per-city archive fetch across that city's date-pages.
+export const revalidate = 3600
+export const dynamicParams = true
+
+// empty → nothing prebuilt at build time (no build-time API hit), but this opts
+// the route into static+ISR: pages are generated on first visit and then cached.
+export function generateStaticParams() {
+  return []
+}
 
 interface Params {
   params: { miasto: string; data: string }
