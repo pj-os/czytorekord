@@ -584,7 +584,12 @@ function Dashboard({
           <p className="panel-note">
             Ile dni upalnych i nocy tropikalnych {place.name} przeżyło razem z Tobą.
           </p>
-          <LifePanel years={data.yearStats} thisYear={thisYear} place={place.name} />
+          <LifePanel
+            years={data.yearStats}
+            thisYear={thisYear}
+            place={place.name}
+            url={shareUrl(place, monthDay)}
+          />
         </div>
 
         <div className="panel wide">

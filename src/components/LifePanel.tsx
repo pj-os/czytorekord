@@ -2,16 +2,20 @@ import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { lifeStats } from '../compute'
 import { thermalForTemp } from '../palette'
+import type { ShareCard } from '../share'
 import type { YearStat } from '../types'
+import ShareButton from './ShareButton'
 
 interface Props {
   years: YearStat[]
   thisYear: number
   place: string
+  /** permalink used on the share card */
+  url: string
 }
 
 /** "Twój wiek w upałach" — enter a birth year, see heat days accumulate across your life. */
-export default function LifePanel({ years, thisYear, place }: Props) {
+export default function LifePanel({ years, thisYear, place, url }: Props) {
   const minYear = years.length ? years[0].year : 1940
   const upTo = thisYear - 1
   const [birthYear, setBirthYear] = useState(1990)
@@ -20,6 +24,24 @@ export default function LifePanel({ years, thisYear, place }: Props) {
   const stats = lifeStats(years, clamped, upTo)
   const maxHot = Math.max(1, ...stats.perYear.map((y) => y.hotDays))
   const factor = stats.earlyAvg > 0 ? stats.recentAvg / stats.earlyAvg : null
+
+  const lifeCard: ShareCard = {
+    place,
+    dateLabel: 'Twój wiek w upałach',
+    tempText: String(stats.totalHotDays),
+    unit: '',
+    color: thermalForTemp(34),
+    verdict: `dni upalnych przeżyłem od ${clamped}`,
+    sub:
+      factor && factor >= 1.15
+        ? `To ×${factor.toFixed(1)} więcej niż w dzieciństwie · ${place} · ${stats.totalTropicalNights} nocy tropikalnych`
+        : `${place} · ${stats.totalTropicalNights} nocy tropikalnych · ${stats.yearsLived} lat`,
+    forecast: false,
+    url,
+    chart: stats.perYear.map((y) => ({ year: y.year, tmax: y.hotDays })),
+    chartColors: stats.perYear.map((y) => thermalForTemp(28 + (y.hotDays / maxHot) * 12)),
+    chartLabel: 'dni upalne rok po roku',
+  }
 
   return (
     <div>
@@ -74,6 +96,10 @@ export default function LifePanel({ years, thisYear, place }: Props) {
         <span>{stats.perYear[0]?.year ?? clamped}</span>
         <span>dni upalne (≥30°C) rok po roku</span>
         <span>{upTo}</span>
+      </div>
+
+      <div className="share-row">
+        <ShareButton card={lifeCard} />
       </div>
     </div>
   )

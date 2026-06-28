@@ -12,8 +12,12 @@ export interface ShareCard {
   sub: string // plain-text supporting line
   forecast: boolean
   url: string // shareable permalink to this exact view
-  /** "this day in history" series (chronological) for the mini chart */
+  /** unit after the big number (default "°C"; e.g. "" for a count card) */
+  unit?: string
+  /** series (chronological) for the mini chart — value drives bar height */
   chart?: { year: number; tmax: number }[]
+  /** explicit per-bar colors (else derived from value as a temperature) */
+  chartColors?: string[]
   /** year to highlight in the chart (today, or the record year) */
   chartHighlightYear?: number
   /** caption under the chart, e.g. "28 czerwca · maks. rok po roku" */
@@ -134,18 +138,21 @@ export async function buildShareImage(card: ShareCard): Promise<Blob> {
     numSize -= 10
     ctx.font = `700 ${numSize}px 'Space Grotesk', sans-serif`
   }
+  const unit = card.unit ?? '°C'
   const unitSize = Math.round(numSize * 0.34)
   const numW = ctx.measureText(numStr).width
   ctx.font = `500 ${unitSize}px 'Space Grotesk', sans-serif`
-  const unitW = ctx.measureText('°C').width
-  const startX = cx - (numW + unitW + 12) / 2
+  const unitW = unit ? ctx.measureText(unit).width + 12 : 0
+  const startX = cx - (numW + unitW) / 2
   ctx.textAlign = 'left'
   ctx.fillStyle = card.color
   ctx.font = `700 ${numSize}px 'Space Grotesk', sans-serif`
   ctx.fillText(numStr, startX, numBaseline)
-  ctx.fillStyle = 'rgba(244,244,248,0.6)'
-  ctx.font = `500 ${unitSize}px 'Space Grotesk', sans-serif`
-  ctx.fillText('°C', startX + numW + 12, numBaseline - numSize * 0.55)
+  if (unit) {
+    ctx.fillStyle = 'rgba(244,244,248,0.6)'
+    ctx.font = `500 ${unitSize}px 'Space Grotesk', sans-serif`
+    ctx.fillText(unit, startX + numW + 12, numBaseline - numSize * 0.55)
+  }
 
   // verdict (wrapped, bold) — flowing cursor
   ctx.textAlign = 'center'
@@ -197,7 +204,7 @@ export async function buildShareImage(card: ShareCard): Promise<Blob> {
       const h = 10 + norm * (bandH - 10)
       const x = left + i * (bandW / n)
       const isHi = d.year === card.chartHighlightYear
-      ctx.fillStyle = thermalForTemp(d.tmax)
+      ctx.fillStyle = card.chartColors?.[i] ?? thermalForTemp(d.tmax)
       ctx.globalAlpha = isHi ? 1 : 0.85
       roundRect(ctx, x, bottom - h, Math.max(2, bw), h, 3)
       ctx.fill()
