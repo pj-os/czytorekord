@@ -40,6 +40,16 @@ npm run test:run # 51 testów (Vitest, w tym golden snapshoty)
 
 Bez cookies i bez backendu — statystyki Vercela są anonimowe, więc baner zgody nie jest wymagany.
 
+### Analityka zdarzeń (PostHog, darmowa)
+
+Szczegółowe zdarzenia (które miasta sprawdzano, kliki „Udostępnij", pobrania obrazka) idą do **PostHog** — bo custom events Vercela wymagają planu Pro. Konfiguracja:
+
+1. Załóż darmowy projekt na [eu.posthog.com](https://eu.posthog.com) (region **EU** pod RODO).
+2. Skopiuj **Project API Key** i ustaw w Vercel → Settings → Environment Variables: `NEXT_PUBLIC_POSTHOG_KEY` (patrz `.env.example`).
+3. Redeploy. Zdarzenia: `place_load`, `share_click`, `image_download`, `share_native/system`, `compare`, `shortcut`.
+
+Bez ustawionego klucza apka działa normalnie — leci tylko darmowa analityka odsłon Vercela.
+
 ## Stack
 
 Next.js 14 (App Router) + React + TypeScript + Framer Motion. Logika pogodowa
