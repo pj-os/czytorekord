@@ -279,13 +279,18 @@ export async function shareCard(card: ShareCard): Promise<ShareResult> {
     }
   }
 
-  // fallback: download the image and copy the link + text
+  // fallback (desktop): trigger a download, then copy the link + text.
   const objUrl = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = objUrl
   a.download = 'czy-to-rekord.png'
+  a.rel = 'noopener'
+  a.style.display = 'none'
+  document.body.appendChild(a) // some browsers require the anchor in the DOM
   a.click()
-  URL.revokeObjectURL(objUrl)
+  a.remove()
+  // revoke late — revoking immediately can abort the download mid-flight
+  setTimeout(() => URL.revokeObjectURL(objUrl), 30000)
   try {
     await navigator.clipboard.writeText(`${text}\n${card.url}`)
     return 'copied'
