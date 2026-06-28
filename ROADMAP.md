@@ -29,6 +29,7 @@ Autonomiczna pętla: każda pozycja przechodzi bramki **tsc → vitest/golden �
 ## Faza 2 — Szkielety integracji (kod + mocki; wymagają później Twoich kluczy)
 - [x] Analytics (warstwa zdarzeń, provider-agnostic, gating zgody RODO; dev=console, prod czeka na providera) — podpięte: place_load, share, compare, shortcut
 - [x] Zapis na alert rekordu (e-mail) — UI + walidacja + kontrakt `AlertSink` + mock localStorage; podpięte analytics
+  - ⏸ **ukryty w UI** (panel wyłączony z `App.tsx`); kod `AlertSignup`/`alerts.ts` + testy zostają. Włączyć po realnym backendzie + polityce prywatności.
 - [x] Konfiguracja hostingu (vercel.json + netlify.toml: SPA fallback, cache immutable dla /assets, no-cache dla sw.js/HTML, nagłówki bezpieczeństwa) — do rewizji po Next.js
 
 ## Faza 3 — Next.js / SEO (migracja, siatka bezpieczeństwa = testy z Fazy 0)

@@ -50,6 +50,12 @@ export default function AboutContent({ startYear }: Props) {
         konkretnej stacji (np. IMGW). Dzienna średnia jest tu przybliżana jako (maks.+min.)/2.
         Projekt ma charakter informacyjno-edukacyjny.
       </p>
+
+      <h3>Kontakt i współpraca</h3>
+      <p>
+        Masz pomysł, uwagę albo propozycję współpracy? Napisz:{' '}
+        <a href="mailto:pjsagent@gmail.com">pjsagent@gmail.com</a>.
+      </p>
     </>
   )
 }

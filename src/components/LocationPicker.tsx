@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { PRESET_CITIES, reverseGeocode, searchCities } from '../api'
 import type { Place } from '../types'
 
@@ -53,7 +54,7 @@ export default function LocationPicker({ onPick, onClose }: Props) {
     )
   }
 
-  return (
+  const modal = (
     <div className="picker-backdrop" onClick={() => onClose?.()}>
       <div className="picker" onClick={(e) => e.stopPropagation()}>
         <h3>Wybierz miejsce</h3>
@@ -100,4 +101,8 @@ export default function LocationPicker({ onPick, onClose }: Props) {
       </div>
     </div>
   )
+
+  // Portal to <body> so the overlay escapes any ancestor with backdrop-filter/
+  // transform (which would otherwise trap a position:fixed child inside the panel).
+  return typeof document !== 'undefined' ? createPortal(modal, document.body) : modal
 }

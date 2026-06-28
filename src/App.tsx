@@ -3,14 +3,13 @@
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion'
 import { useEffect, useMemo, useState } from 'react'
 import { track } from './analytics'
-import { PRESET_CITIES } from './api'
+import { PRESET_CITIES, reverseGeocode } from './api'
 import { indexOfMonthDay, indexOfToday, monthDayOf } from './calendar'
 import { daySnapshot, extremeDays } from './compute'
 import DayHistory from './components/DayHistory'
 import DayScrubber from './components/DayScrubber'
 import LocationPicker from './components/LocationPicker'
 import AboutModal from './components/AboutModal'
-import AlertSignup from './components/AlertSignup'
 import CityCompare from './components/CityCompare'
 import LifePanel from './components/LifePanel'
 import RankBars, { type RankItem } from './components/RankBars'
@@ -36,8 +35,9 @@ export default function App() {
   // a shared link carries the calendar day; capture it once for the dashboard
   const [initialMonthDay] = useState<string | null>(() => readUrlState().monthDay)
 
-  // Priority: shared URL → last-used place → Warsaw. Geolocation stays an
-  // explicit opt-in via the picker (auto-prompting is unreliable without a gesture).
+  // Priority: shared URL → last-used place → geolocation → Warsaw.
+  // On a first visit we ASK for location; if denied/ignored/unavailable we fall
+  // back to Warsaw. (The picker also offers "Użyj mojej lokalizacji" anytime.)
   useEffect(() => {
     const url = readUrlState()
     if (url.place) {
@@ -50,10 +50,40 @@ export default function App() {
         load(JSON.parse(saved))
         return
       } catch {
-        /* fall through to default */
+        /* fall through */
       }
     }
-    load(PRESET_CITIES[0]) // Warszawa
+
+    // first visit
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      load(PRESET_CITIES[0])
+      return
+    }
+    let settled = false
+    const useWarsaw = () => {
+      if (settled) return
+      settled = true
+      load(PRESET_CITIES[0])
+    }
+    // don't get stuck loading if the user ignores the permission prompt
+    const ignoreTimer = setTimeout(useWarsaw, 6000)
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        if (settled) return
+        settled = true
+        clearTimeout(ignoreTimer)
+        try {
+          load(await reverseGeocode(pos.coords.latitude, pos.coords.longitude))
+        } catch {
+          load(PRESET_CITIES[0])
+        }
+      },
+      () => {
+        clearTimeout(ignoreTimer)
+        useWarsaw()
+      },
+      { timeout: 8000, maximumAge: 600000 },
+    )
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -555,13 +585,6 @@ function Dashboard({
           <CityCompare base={data} monthDay={monthDay} thisYear={thisYear} label={label} />
         </div>
 
-        <div className="panel wide">
-          <p className="panel-title">Powiadom mnie o rekordzie</p>
-          <p className="panel-note">
-            Zostaw e-mail — damy znać, gdy zbliży się rekordowy upał lub mróz ({place.name}).
-          </p>
-          <AlertSignup place={place} />
-        </div>
 
         <div className="panel">
           <p className="panel-title">Najcieplejszy {monthNom(selMonth)} w historii</p>
@@ -593,8 +616,8 @@ function Dashboard({
           O projekcie / Metodologia
         </button>{' '}
         · Dane: <a href="https://open-meteo.com" target="_blank" rel="noreferrer">Open-Meteo</a> ·
-        reanaliza ERA5, od {data.startYear} · {place.latitude.toFixed(2)},{' '}
-        {place.longitude.toFixed(2)}
+        reanaliza ERA5, od {data.startYear} ·{' '}
+        <a href="mailto:pjsagent@gmail.com">Kontakt / współpraca</a>
       </p>
 
       {aboutOpen && <AboutModal startYear={data.startYear} onClose={() => setAboutOpen(false)} />}
