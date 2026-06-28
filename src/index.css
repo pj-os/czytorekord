@@ -402,6 +402,35 @@ body {
   opacity: 0.7;
   cursor: default;
 }
+a.share-btn {
+  text-decoration: none;
+}
+
+/* share preview overlay (desktop) */
+.share-preview {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  background: #101019;
+  border: 1px solid var(--panel-border);
+  border-radius: 18px;
+  padding: 18px;
+}
+.share-preview img {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  max-height: 58vh;
+  border-radius: 12px;
+}
+.share-preview-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 16px;
+}
 
 /* ---------- panels grid ---------- */
 .grid {
