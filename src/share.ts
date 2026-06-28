@@ -1,3 +1,5 @@
+import { thermalForTemp } from './palette'
+
 /** Bare domain shown as a call-to-action on the share card. */
 const SHARE_SITE = 'czytorekord.pl'
 
@@ -10,6 +12,12 @@ export interface ShareCard {
   sub: string // plain-text supporting line
   forecast: boolean
   url: string // shareable permalink to this exact view
+  /** "this day in history" series (chronological) for the mini chart */
+  chart?: { year: number; tmax: number }[]
+  /** year to highlight in the chart (today, or the record year) */
+  chartHighlightYear?: number
+  /** caption under the chart, e.g. "28 czerwca · maks. rok po roku" */
+  chartLabel?: string
 }
 
 function rgba(rgb: string, a: number): string {
@@ -57,6 +65,14 @@ export async function buildShareImage(card: ShareCard): Promise<Blob> {
   canvas.height = H
   const ctx = canvas.getContext('2d')!
 
+  const setLS = (px: string) => {
+    try {
+      ctx.letterSpacing = px
+    } catch {
+      /* older browsers */
+    }
+  }
+
   // background + thermal glow driven by the day's color
   ctx.fillStyle = '#07070c'
   ctx.fillRect(0, 0, W, H)
@@ -72,62 +88,46 @@ export async function buildShareImage(card: ShareCard): Promise<Blob> {
   ctx.textAlign = 'left'
   ctx.fillStyle = 'rgba(244,244,248,0.45)'
   ctx.font = "500 26px 'JetBrains Mono', monospace"
-  try {
-    ctx.letterSpacing = '6px'
-  } catch {
-    /* older browsers */
-  }
-  ctx.fillText('CZY TO REKORD?', 80, 110)
-  try {
-    ctx.letterSpacing = '0px'
-  } catch {
-    /* noop */
-  }
+  setLS('6px')
+  ctx.fillText('CZY TO REKORD?', 80, 104)
+  setLS('0px')
 
   // place (top-right) with a colored dot
   ctx.textAlign = 'right'
   ctx.font = "600 30px 'Space Grotesk', sans-serif"
   ctx.fillStyle = '#f4f4f8'
-  ctx.fillText(card.place, W - 80, 112)
+  ctx.fillText(card.place, W - 80, 106)
   const placeW = ctx.measureText(card.place).width
   ctx.beginPath()
   ctx.fillStyle = card.color
-  ctx.arc(W - 80 - placeW - 22, 102, 9, 0, Math.PI * 2)
+  ctx.arc(W - 80 - placeW - 22, 96, 9, 0, Math.PI * 2)
   ctx.fill()
 
   // date label
   ctx.textAlign = 'center'
   ctx.fillStyle = 'rgba(244,244,248,0.6)'
-  ctx.font = "500 34px 'JetBrains Mono', monospace"
-  try {
-    ctx.letterSpacing = '5px'
-  } catch {
-    /* noop */
-  }
-  ctx.fillText(card.dateLabel.toUpperCase(), cx, 470)
-  try {
-    ctx.letterSpacing = '0px'
-  } catch {
-    /* noop */
-  }
+  ctx.font = "500 32px 'JetBrains Mono', monospace"
+  setLS('5px')
+  ctx.fillText(card.dateLabel.toUpperCase(), cx, 232)
+  setLS('0px')
 
   // forecast pill
+  let numBaseline = 470
   if (card.forecast) {
     ctx.font = "500 24px 'JetBrains Mono', monospace"
     const pill = 'PROGNOZA NA DZIŚ'
     const pw = ctx.measureText(pill).width + 56
-    const px = cx - pw / 2
-    const py = 520
     ctx.fillStyle = 'rgba(255,170,80,0.14)'
-    roundRect(ctx, px, py, pw, 52, 26)
+    roundRect(ctx, cx - pw / 2, 268, pw, 52, 26)
     ctx.fill()
     ctx.fillStyle = '#ffc38a'
-    ctx.fillText(pill, cx, py + 35)
+    ctx.fillText(pill, cx, 303)
+    numBaseline = 510
   }
 
   // big temperature, scaled to fit width
-  const maxNumW = W - 200
-  let numSize = 300
+  const maxNumW = W - 220
+  let numSize = 280
   ctx.font = `700 ${numSize}px 'Space Grotesk', sans-serif`
   const numStr = card.tempText
   while (ctx.measureText(numStr).width > maxNumW && numSize > 120) {
@@ -138,9 +138,7 @@ export async function buildShareImage(card: ShareCard): Promise<Blob> {
   const numW = ctx.measureText(numStr).width
   ctx.font = `500 ${unitSize}px 'Space Grotesk', sans-serif`
   const unitW = ctx.measureText('°C').width
-  const totalW = numW + unitW + 12
-  const startX = cx - totalW / 2
-  const numBaseline = 800
+  const startX = cx - (numW + unitW + 12) / 2
   ctx.textAlign = 'left'
   ctx.fillStyle = card.color
   ctx.font = `700 ${numSize}px 'Space Grotesk', sans-serif`
@@ -149,35 +147,88 @@ export async function buildShareImage(card: ShareCard): Promise<Blob> {
   ctx.font = `500 ${unitSize}px 'Space Grotesk', sans-serif`
   ctx.fillText('°C', startX + numW + 12, numBaseline - numSize * 0.55)
 
-  // verdict (wrapped, bold)
+  // verdict (wrapped, bold) — flowing cursor
   ctx.textAlign = 'center'
   ctx.fillStyle = '#f4f4f8'
-  ctx.font = "600 56px 'Space Grotesk', sans-serif"
-  const vLines = wrap(ctx, card.verdict, W - 160)
-  let y = 980
-  for (const l of vLines) {
+  ctx.font = "600 54px 'Space Grotesk', sans-serif"
+  let y = numBaseline + 130
+  for (const l of wrap(ctx, card.verdict, W - 140)) {
     ctx.fillText(l, cx, y)
-    y += 70
+    y += 64
   }
 
   // sub (wrapped, dim)
   ctx.fillStyle = 'rgba(244,244,248,0.55)'
-  ctx.font = "400 30px 'Space Grotesk', sans-serif"
-  const sLines = wrap(ctx, card.sub, W - 200)
-  y += 12
-  for (const l of sLines) {
+  ctx.font = "400 28px 'Space Grotesk', sans-serif"
+  y += 10
+  for (const l of wrap(ctx, card.sub, W - 200)) {
     ctx.fillText(l, cx, y)
-    y += 42
+    y += 38
+  }
+
+  // signature mini-chart: "this day in history" bars
+  if (card.chart && card.chart.length > 1) {
+    const data = card.chart
+    const temps = data.map((d) => d.tmax)
+    const lo = Math.min(...temps) - 1
+    const hi = Math.max(...temps) + 1
+    const range = hi - lo || 1
+    const left = 80
+    const right = W - 80
+    const bandW = right - left
+    const bottom = H - 150
+    const bandTop = Math.max(y + 56, bottom - 300)
+    const bandH = bottom - bandTop
+    const n = data.length
+    const gap = 3
+    const bw = bandW / n - gap
+
+    // caption
+    ctx.textAlign = 'center'
+    ctx.fillStyle = 'rgba(244,244,248,0.5)'
+    ctx.font = "500 22px 'JetBrains Mono', monospace"
+    setLS('2px')
+    ctx.fillText((card.chartLabel ?? 'maks. rok po roku').toUpperCase(), cx, bandTop - 26)
+    setLS('0px')
+
+    for (let i = 0; i < n; i++) {
+      const d = data[i]
+      const norm = (d.tmax - lo) / range
+      const h = 10 + norm * (bandH - 10)
+      const x = left + i * (bandW / n)
+      const isHi = d.year === card.chartHighlightYear
+      ctx.fillStyle = thermalForTemp(d.tmax)
+      ctx.globalAlpha = isHi ? 1 : 0.85
+      roundRect(ctx, x, bottom - h, Math.max(2, bw), h, 3)
+      ctx.fill()
+      if (isHi) {
+        ctx.globalAlpha = 1
+        ctx.strokeStyle = '#ffffff'
+        ctx.lineWidth = 3
+        roundRect(ctx, x - 1, bottom - h - 1, Math.max(2, bw) + 2, h + 2, 3)
+        ctx.stroke()
+      }
+    }
+    ctx.globalAlpha = 1
+
+    // axis endpoints
+    ctx.fillStyle = 'rgba(244,244,248,0.38)'
+    ctx.font = "500 20px 'JetBrains Mono', monospace"
+    ctx.textAlign = 'left'
+    ctx.fillText(String(data[0].year), left, bottom + 30)
+    ctx.textAlign = 'right'
+    const lastIsToday = data[data.length - 1].year === card.chartHighlightYear && card.forecast
+    ctx.fillText(lastIsToday ? 'dziś' : String(data[data.length - 1].year), right, bottom + 30)
   }
 
   // footer — site URL (call to action) + data attribution
   ctx.textAlign = 'center'
   ctx.fillStyle = '#ffffff'
   ctx.font = "700 30px 'JetBrains Mono', monospace"
-  ctx.fillText(SHARE_SITE, cx, H - 78)
+  ctx.fillText(SHARE_SITE, cx, H - 74)
   ctx.fillStyle = 'rgba(244,244,248,0.32)'
   ctx.font = "500 22px 'JetBrains Mono', monospace"
-  ctx.fillText('dane: Open-Meteo · reanaliza ERA5, od 1940', cx, H - 44)
+  ctx.fillText('dane: Open-Meteo · reanaliza ERA5, od 1940', cx, H - 42)
 
   return new Promise((resolve, reject) =>
     canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/png'),

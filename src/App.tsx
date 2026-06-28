@@ -352,6 +352,12 @@ function Dashboard({
       sub,
       forecast: todayProjected,
       url: shareUrl(place, monthDay),
+      chart: [
+        ...snap.history,
+        ...(snap.subjectValue != null ? [{ year: thisYear, tmax: snap.subjectValue }] : []),
+      ],
+      chartHighlightYear: snap.subjectValue != null ? thisYear : snap.recordHot?.year,
+      chartLabel: `${label} · maks. rok po roku`,
     }
   })()
 
