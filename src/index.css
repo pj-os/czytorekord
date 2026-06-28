@@ -619,6 +619,77 @@ a.share-btn {
   color: var(--ink);
 }
 
+/* ---------- najcieplej w Polsce ---------- */
+.poland-block {
+  margin-bottom: 18px;
+}
+.poland-head {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin-bottom: 10px;
+}
+.poland-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.poland-row {
+  display: grid;
+  grid-template-columns: 22px 110px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+.poland-row:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.poland-rank {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--ink-faint);
+}
+.poland-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.poland-bar {
+  height: 10px;
+  border-radius: 5px;
+  min-width: 3px;
+}
+.poland-val {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.poland-foot {
+  font-size: 12px;
+  color: var(--ink-faint);
+  margin-top: 4px;
+}
+@media (max-width: 680px) {
+  .poland-row {
+    grid-template-columns: 20px 90px 1fr auto;
+    gap: 8px;
+  }
+}
+
 /* ---------- city compare ---------- */
 .compare-empty {
   display: flex;

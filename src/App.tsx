@@ -12,6 +12,7 @@ import LocationPicker from './components/LocationPicker'
 import AboutModal from './components/AboutModal'
 import CityCompare from './components/CityCompare'
 import LifePanel from './components/LifePanel'
+import PolandPanel from './components/PolandPanel'
 import RankBars, { type RankItem } from './components/RankBars'
 import ShareButton from './components/ShareButton'
 import WarmingStripes from './components/WarmingStripes'
@@ -150,6 +151,7 @@ export default function App() {
           data={data}
           initialMonthDay={initialMonthDay}
           onChangePlace={() => setPickerOpen(true)}
+          onPickCity={load}
         />
       )}
 
@@ -179,10 +181,12 @@ function Dashboard({
   data,
   initialMonthDay,
   onChangePlace,
+  onPickCity,
 }: {
   data: ClimateData
   initialMonthDay: string | null
   onChangePlace: () => void
+  onPickCity: (place: Place) => void
 }) {
   const { place, current } = data
   const today = useMemo(() => new Date(), [])
@@ -598,6 +602,14 @@ function Dashboard({
             Zestaw {place.name} z innym miastem dla wybranego dnia ({label}).
           </p>
           <CityCompare base={data} monthDay={monthDay} thisYear={thisYear} label={label} />
+        </div>
+
+        <div className="panel wide">
+          <p className="panel-title">Najcieplej w Polsce</p>
+          <p className="panel-note">
+            Gdzie pada najwyższa temperatura — dziś na żywo oraz rekord {label} z historii.
+          </p>
+          <PolandPanel monthDay={monthDay} label={label} isToday={isToday} onPickCity={onPickCity} />
         </div>
 
 

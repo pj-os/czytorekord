@@ -111,6 +111,35 @@ export async function fetchTodayConditions(place: Place): Promise<TodayCondition
   }
 }
 
+export interface PolandNowEntry {
+  slug: string
+  name: string
+  temp: number
+  dayMax: number
+}
+
+/** Live: current temp + today's max for all preset cities, in ONE multi-location call. */
+export async function fetchPolandNow(): Promise<PolandNowEntry[]> {
+  const lats = PRESET_CITIES.map((c) => c.latitude).join(',')
+  const lons = PRESET_CITIES.map((c) => c.longitude).join(',')
+  const url =
+    `${FORECAST}?latitude=${lats}&longitude=${lons}` +
+    `&current=temperature_2m&daily=temperature_2m_max&forecast_days=1&timezone=auto`
+  const d = await getJSON(url)
+  const arr: any[] = Array.isArray(d) ? d : [d]
+  return PRESET_CITIES.map((c, i) => {
+    const r = arr[i] ?? {}
+    return {
+      slug: c.slug ?? c.name,
+      name: c.name,
+      temp: r.current?.temperature_2m,
+      dayMax: r.daily?.temperature_2m_max?.[0],
+    }
+  })
+    .filter((e) => e.dayMax != null)
+    .sort((a, b) => b.dayMax - a.dayMax)
+}
+
 export async function fetchArchive(place: Place, endDate: string): Promise<DailySeries> {
   // Only request max+min (cheaper on the free tier's cost-weighted limit);
   // the daily mean is approximated as their midpoint, which is plenty accurate
