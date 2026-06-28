@@ -1,5 +1,5 @@
 /** Bare domain shown as a call-to-action on the share card. */
-const SHARE_SITE = 'czytorekord.vercel.app'
+const SHARE_SITE = 'czytorekord.pl'
 
 export interface ShareCard {
   place: string
