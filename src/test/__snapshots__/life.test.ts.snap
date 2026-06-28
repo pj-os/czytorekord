@@ -1,0 +1,158 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`lifeStats > GOLDEN: born 1990, Warszawa 1`] = `
+{
+  "birthYear": 1990,
+  "earlyAvg": 3.2,
+  "perYear": [
+    {
+      "hotDays": 0,
+      "year": 1990,
+    },
+    {
+      "hotDays": 1,
+      "year": 1991,
+    },
+    {
+      "hotDays": 7,
+      "year": 1992,
+    },
+    {
+      "hotDays": 1,
+      "year": 1993,
+    },
+    {
+      "hotDays": 12,
+      "year": 1994,
+    },
+    {
+      "hotDays": 3,
+      "year": 1995,
+    },
+    {
+      "hotDays": 1,
+      "year": 1996,
+    },
+    {
+      "hotDays": 2,
+      "year": 1997,
+    },
+    {
+      "hotDays": 3,
+      "year": 1998,
+    },
+    {
+      "hotDays": 2,
+      "year": 1999,
+    },
+    {
+      "hotDays": 5,
+      "year": 2000,
+    },
+    {
+      "hotDays": 2,
+      "year": 2001,
+    },
+    {
+      "hotDays": 3,
+      "year": 2002,
+    },
+    {
+      "hotDays": 1,
+      "year": 2003,
+    },
+    {
+      "hotDays": 1,
+      "year": 2004,
+    },
+    {
+      "hotDays": 5,
+      "year": 2005,
+    },
+    {
+      "hotDays": 15,
+      "year": 2006,
+    },
+    {
+      "hotDays": 3,
+      "year": 2007,
+    },
+    {
+      "hotDays": 1,
+      "year": 2008,
+    },
+    {
+      "hotDays": 2,
+      "year": 2009,
+    },
+    {
+      "hotDays": 9,
+      "year": 2010,
+    },
+    {
+      "hotDays": 1,
+      "year": 2011,
+    },
+    {
+      "hotDays": 7,
+      "year": 2012,
+    },
+    {
+      "hotDays": 6,
+      "year": 2013,
+    },
+    {
+      "hotDays": 3,
+      "year": 2014,
+    },
+    {
+      "hotDays": 17,
+      "year": 2015,
+    },
+    {
+      "hotDays": 5,
+      "year": 2016,
+    },
+    {
+      "hotDays": 4,
+      "year": 2017,
+    },
+    {
+      "hotDays": 14,
+      "year": 2018,
+    },
+    {
+      "hotDays": 15,
+      "year": 2019,
+    },
+    {
+      "hotDays": 5,
+      "year": 2020,
+    },
+    {
+      "hotDays": 12,
+      "year": 2021,
+    },
+    {
+      "hotDays": 15,
+      "year": 2022,
+    },
+    {
+      "hotDays": 10,
+      "year": 2023,
+    },
+    {
+      "hotDays": 17,
+      "year": 2024,
+    },
+    {
+      "hotDays": 9,
+      "year": 2025,
+    },
+  ],
+  "recentAvg": 10.6,
+  "totalHotDays": 219,
+  "totalTropicalNights": 97,
+  "yearsLived": 36,
+}
+`;
