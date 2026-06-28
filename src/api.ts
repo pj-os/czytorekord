@@ -1,3 +1,4 @@
+import { todayProgress } from './compute'
 import type { CurrentWeather, DailySeries, Place } from './types'
 
 const GEOCODE = 'https://geocoding-api.open-meteo.com/v1/search'
@@ -78,27 +79,36 @@ export async function reverseGeocode(lat: number, lon: number): Promise<Place> {
   }
 }
 
-export async function fetchCurrent(place: Place): Promise<CurrentWeather> {
+export interface TodayConditions {
+  current: CurrentWeather
+  /** highest temp reached so far today */
+  maxSoFar: number
+  /** day's max (reached or still forecast) */
+  dayMax: number
+  /** true while the daily peak is still ahead */
+  peakAhead: boolean
+}
+
+/** Current reading + today's hourly run, in one call — used to judge the live day. */
+export async function fetchTodayConditions(place: Place): Promise<TodayConditions> {
   const url =
     `${FORECAST}?latitude=${place.latitude}&longitude=${place.longitude}` +
-    `&current=temperature_2m,weather_code,is_day&timezone=auto`
+    `&current=temperature_2m,weather_code,is_day&hourly=temperature_2m&forecast_days=1&timezone=auto`
   const d = await getJSON(url)
   const c = d.current
-  return {
+  const current: CurrentWeather = {
     temperature: c.temperature_2m,
     time: c.time,
     weatherCode: c.weather_code,
     isDay: c.is_day === 1,
   }
-}
-
-/** Today's max so far + min, from the forecast daily endpoint (covers the live day). */
-export async function fetchToday(place: Place): Promise<{ tmax: number; tmin: number }> {
-  const url =
-    `${FORECAST}?latitude=${place.latitude}&longitude=${place.longitude}` +
-    `&daily=temperature_2m_max,temperature_2m_min&forecast_days=1&timezone=auto`
-  const d = await getJSON(url)
-  return { tmax: d.daily.temperature_2m_max[0], tmin: d.daily.temperature_2m_min[0] }
+  const prog = todayProgress(d.hourly.time, d.hourly.temperature_2m, c.time)
+  return {
+    current,
+    maxSoFar: prog.maxSoFar,
+    dayMax: Math.max(prog.maxSoFar, prog.maxRest),
+    peakAhead: prog.peakAhead,
+  }
 }
 
 export async function fetchArchive(place: Place, endDate: string): Promise<DailySeries> {

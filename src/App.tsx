@@ -237,12 +237,13 @@ function Dashboard({
   const isRecord = hasSubject && v?.lastHotterYear == null
   const yearsAgo = v?.lastHotterYear ? thisYear - v.lastHotterYear : 0
 
-  // Today's headline is the *forecast* daily high — the day isn't over. Flag it
-  // as a projection, and only call a record "confirmed" once the measured
-  // temperature alone already beats the prior record for this date.
-  const measured = current.temperature
-  const todayProjected = isToday && hasSubject && snap.subjectValue! > measured + 0.1
-  const recordConfirmed = isToday && isRecord && !!v && measured > v.dayMax
+  // Today's headline counts as a *forecast* only while the daily peak is still
+  // ahead (morning/early afternoon). Once the peak has passed (e.g. evening) the
+  // reached max is effectively final — drop the "prognoza" framing. `measured`
+  // is the highest temperature actually reached so far today.
+  const measured = data.todayMaxSoFar
+  const todayProjected = isToday && hasSubject && data.todayPeakAhead
+  const recordConfirmed = isToday && isRecord && !!v && measured >= v.dayMax
 
   // Warm vs cold narrative: pick the side this day leans toward, so a frosty
   // winter day isn't described as "gorąco". Today (summer forecast) stays warm.
@@ -384,7 +385,10 @@ function Dashboard({
       <section className="hero">
         <p className="hero-kicker">
           {isToday ? (
-            <>{label} · teraz {current.temperature.toFixed(1)}°C</>
+            <>
+              {label} · teraz {current.temperature.toFixed(1)}°C · maks. dziś{' '}
+              {data.todayMaxSoFar.toFixed(1)}°C
+            </>
           ) : hasSubject ? (
             <>{label} {thisYear}</>
           ) : (
@@ -436,8 +440,8 @@ function Dashboard({
                         todayProjected ? (
                           <>
                             Prognozowane maksimum <b>{snap.subjectValue!.toFixed(1)}°C</b> · poprzedni
-                            rekord <b>{v!.dayMax.toFixed(1)}°C</b> (dane od {data.startYear}). Na razie
-                            zmierzono <b>{measured.toFixed(1)}°C</b>.
+                            rekord <b>{v!.dayMax.toFixed(1)}°C</b> (dane od {data.startYear}).
+                            Dotychczas dziś najwyżej <b>{measured.toFixed(1)}°C</b>.
                           </>
                         ) : (
                           <>

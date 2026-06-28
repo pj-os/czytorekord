@@ -1,4 +1,4 @@
-import { fetchArchive, fetchCurrent, fetchToday } from './api'
+import { fetchArchive, fetchTodayConditions } from './api'
 import { buildVerdict, dayInHistory, monthStats, yearStats } from './compute'
 import type { ClimateData, DailySeries, Place } from './types'
 
@@ -46,14 +46,13 @@ export async function loadClimate(place: Place): Promise<ClimateData> {
   const endRef = new Date(now.getTime() - 2 * 86400000)
   const endDate = `${endRef.getFullYear()}-${pad(endRef.getMonth() + 1)}-${pad(endRef.getDate())}`
 
-  const [current, today, series] = await Promise.all([
-    fetchCurrent(place),
-    fetchToday(place),
+  const [cond, series] = await Promise.all([
+    fetchTodayConditions(place),
     getArchive(place, endDate),
   ])
 
-  // the value we judge: today's max so far, but never below the live reading
-  const todayValue = Math.max(today.tmax, current.temperature)
+  // the value we judge: the day's max (already reached, or still forecast ahead)
+  const todayValue = cond.dayMax
 
   const verdict = buildVerdict(series, monthDay, todayValue, thisYear)
   const ys = yearStats(series)
@@ -61,8 +60,10 @@ export async function loadClimate(place: Place): Promise<ClimateData> {
 
   return {
     place,
-    current,
+    current: cond.current,
     todayValue,
+    todayMaxSoFar: cond.maxSoFar,
+    todayPeakAhead: cond.peakAhead,
     series,
     dayInHistory: dayInHistory(series, monthDay).filter((d) => d.year < thisYear),
     yearStats: ys,

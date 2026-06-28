@@ -127,6 +127,33 @@ export function daySnapshot(
   return { monthDay, history, subjectValue, verdict, recordHot, recordCold, avg }
 }
 
+export interface TodayProgress {
+  /** highest temperature reached so far today (hours up to and including now) */
+  maxSoFar: number
+  /** highest forecast temperature for the remaining hours of today */
+  maxRest: number
+  /** true while the day's peak is still ahead (rest-of-day forecast beats what's been reached) */
+  peakAhead: boolean
+}
+
+/**
+ * From today's hourly forecast + the current time, work out the max reached so
+ * far vs. what's still coming — so the UI can stop calling the value a
+ * "forecast" once the daily peak has passed (e.g. late afternoon/evening).
+ */
+export function todayProgress(times: string[], temps: number[], nowIso: string): TodayProgress {
+  const nowHour = nowIso.slice(0, 13) // "YYYY-MM-DDTHH"
+  let maxSoFar = -Infinity
+  let maxRest = -Infinity
+  for (let i = 0; i < times.length; i++) {
+    const t = temps[i]
+    if (t == null) continue
+    if (times[i].slice(0, 13) <= nowHour) maxSoFar = Math.max(maxSoFar, t)
+    else maxRest = Math.max(maxRest, t)
+  }
+  return { maxSoFar, maxRest, peakAhead: maxRest > maxSoFar + 0.3 }
+}
+
 export interface ExtremeDay {
   monthDay: string
   year: number

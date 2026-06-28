@@ -77,8 +77,12 @@ export interface DaySnapshot {
 export interface ClimateData {
   place: Place
   current: CurrentWeather
-  /** the value we judge — today's max so far (or current temp if higher) */
+  /** the value we judge — the day's max (reached so far, or still forecast) */
   todayValue: number
+  /** highest temperature actually reached so far today */
+  todayMaxSoFar: number
+  /** true while today's peak is still ahead (value is a forecast, not yet realized) */
+  todayPeakAhead: boolean
   series: DailySeries
   dayInHistory: DayInHistory[]
   yearStats: YearStat[]
