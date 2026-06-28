@@ -5,11 +5,13 @@ import { buildShareImage, type ShareCard } from '../share'
 
 interface Props {
   card: ShareCard
+  /** analytics label distinguishing where the share came from */
+  source?: string
 }
 
 type State = 'idle' | 'working' | 'error'
 
-export default function ShareButton({ card }: Props) {
+export default function ShareButton({ card, source = 'verdict' }: Props) {
   const [state, setState] = useState<State>('idle')
   const [preview, setPreview] = useState<{ url: string; file: File } | null>(null)
 
@@ -23,7 +25,7 @@ export default function ShareButton({ card }: Props) {
       setState('error')
       return
     }
-    track('share', { place: card.place })
+    track('share_click', { place: card.place, source })
     const file = new File([blob], 'czy-to-rekord.png', { type: 'image/png' })
     const nav = navigator as Navigator & {
       canShare?: (d?: ShareData) => boolean
@@ -36,6 +38,7 @@ export default function ShareButton({ card }: Props) {
     if (canShareFiles && isTouch) {
       try {
         await nav.share!({ files: [file], title: 'Czy to rekord?', text: shareText(card), url: card.url })
+        track('share_native', { place: card.place, source })
         setState('idle')
         return
       } catch (e) {
@@ -61,6 +64,7 @@ export default function ShareButton({ card }: Props) {
     if (preview && nav.share) {
       try {
         await nav.share({ files: [preview.file], title: 'Czy to rekord?', text: shareText(card), url: card.url })
+        track('share_system', { place: card.place, source })
       } catch {
         /* cancelled */
       }
@@ -90,7 +94,12 @@ export default function ShareButton({ card }: Props) {
               </button>
               <img src={preview.url} alt="Grafika do udostępnienia" />
               <div className="share-preview-actions">
-                <a className="share-btn" href={preview.url} download="czy-to-rekord.png">
+                <a
+                  className="share-btn"
+                  href={preview.url}
+                  download="czy-to-rekord.png"
+                  onClick={() => track('image_download', { place: card.place, source })}
+                >
                   Pobierz obrazek
                 </a>
                 {canSystemShare && (

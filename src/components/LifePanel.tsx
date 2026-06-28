@@ -100,7 +100,7 @@ export default function LifePanel({ years, thisYear, place, url }: Props) {
       </div>
 
       <div className="share-row">
-        <ShareButton card={lifeCard} />
+        <ShareButton card={lifeCard} source="life" />
       </div>
     </div>
   )
