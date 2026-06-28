@@ -1,3 +1,6 @@
+/** Bare domain shown as a call-to-action on the share card. */
+const SHARE_SITE = 'czytorekord.vercel.app'
+
 export interface ShareCard {
   place: string
   dateLabel: string // "27 czerwca 2026"
@@ -167,10 +170,14 @@ export async function buildShareImage(card: ShareCard): Promise<Blob> {
     y += 42
   }
 
-  // footer
+  // footer — site URL (call to action) + data attribution
+  ctx.textAlign = 'center'
+  ctx.fillStyle = '#ffffff'
+  ctx.font = "700 30px 'JetBrains Mono', monospace"
+  ctx.fillText(SHARE_SITE, cx, H - 78)
   ctx.fillStyle = 'rgba(244,244,248,0.32)'
-  ctx.font = "500 24px 'JetBrains Mono', monospace"
-  ctx.fillText('dane: Open-Meteo · reanaliza ERA5, od 1940', cx, H - 70)
+  ctx.font = "500 22px 'JetBrains Mono', monospace"
+  ctx.fillText('dane: Open-Meteo · reanaliza ERA5, od 1940', cx, H - 44)
 
   return new Promise((resolve, reject) =>
     canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/png'),

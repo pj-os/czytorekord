@@ -46,4 +46,4 @@ Autonomiczna pętla: każda pozycja przechodzi bramki **tsc → vitest/golden �
 - Wybór modelu monetyzacji (afiliacja / display / B2B / lead-gen)
 - Treści SEO, brand copy, baner zgody RODO
 - Klucze: analytics, provider e-mail/push, konto hostingu, konta afiliacyjne/social
-- Realna domena → podmień w `robots.txt`, `sitemap.xml`, JSON-LD i OG `url` (teraz placeholder `czytorekord.pl`)
+- ~~Realna domena~~ ✅ ustawiona na `czytorekord.vercel.app` (layout metadataBase + JSON-LD, sitemap, robots, grafika share)

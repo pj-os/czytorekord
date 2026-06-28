@@ -8,7 +8,7 @@ const DESC =
   'Sprawdź, czy dzisiejsza temperatura w Twoim mieście to rekord. Ponad 80 lat danych pogodowych (od 1940) dla całej Polski — rekordy ciepła i zimna, dni upalne, noce tropikalne.'
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://czytorekord.pl'),
+  metadataBase: new URL('https://czytorekord.vercel.app'),
   title: {
     default: 'Czy to rekord? — termiczna historia Polski',
     template: '%s · Czy to rekord?',
@@ -39,7 +39,7 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
   name: 'Czy to rekord?',
-  url: 'https://czytorekord.pl',
+  url: 'https://czytorekord.vercel.app',
   applicationCategory: 'WeatherApplication',
   operatingSystem: 'Web',
   inLanguage: 'pl',
