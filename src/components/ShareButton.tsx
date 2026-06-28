@@ -12,7 +12,6 @@ type State = 'idle' | 'working' | 'error'
 export default function ShareButton({ card }: Props) {
   const [state, setState] = useState<State>('idle')
   const [preview, setPreview] = useState<{ url: string; file: File } | null>(null)
-  const [copied, setCopied] = useState(false)
 
   async function onClick() {
     if (state === 'working') return
@@ -49,22 +48,12 @@ export default function ShareButton({ card }: Props) {
 
     // desktop → show a preview with an explicit download (reliable across browsers)
     setPreview({ url: URL.createObjectURL(blob), file })
-    setCopied(false)
     setState('idle')
   }
 
   function close() {
     if (preview) URL.revokeObjectURL(preview.url)
     setPreview(null)
-  }
-
-  async function copyLink() {
-    try {
-      await navigator.clipboard.writeText(`${shareText(card)}\n${card.url}`)
-      setCopied(true)
-    } catch {
-      /* clipboard unavailable */
-    }
   }
 
   async function systemShare() {
@@ -102,11 +91,8 @@ export default function ShareButton({ card }: Props) {
               <img src={preview.url} alt="Grafika do udostępnienia" />
               <div className="share-preview-actions">
                 <a className="share-btn" href={preview.url} download="czy-to-rekord.png">
-                  Pobierz PNG
+                  Pobierz obrazek
                 </a>
-                <button className="chip" onClick={copyLink}>
-                  {copied ? 'Skopiowano link ✓' : 'Kopiuj link'}
-                </button>
                 {canSystemShare && (
                   <button className="chip" onClick={systemShare}>
                     Udostępnij…
