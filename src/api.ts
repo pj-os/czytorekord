@@ -29,6 +29,38 @@ export function cityBySlug(slug: string): Place | null {
   return PRESET_CITIES.find((c) => c.slug === slug) ?? null
 }
 
+/**
+ * Broader set used for the "Najcieplej w Polsce" ranking + records — includes
+ * known heat/extreme spots (Słubice, the warm SW border, etc.), not just the
+ * big cities, so the absolute record actually surfaces the real hot places.
+ */
+export const POLAND_SPOTS: Place[] = [
+  ...PRESET_CITIES,
+  { slug: 'slubice', name: 'Słubice', admin: 'Lubuskie', country: 'PL', latitude: 52.3508, longitude: 14.5601 },
+  { slug: 'kostrzyn', name: 'Kostrzyn n. Odrą', admin: 'Lubuskie', country: 'PL', latitude: 52.5896, longitude: 14.6486 },
+  { slug: 'gorzow', name: 'Gorzów Wlkp.', admin: 'Lubuskie', country: 'PL', latitude: 52.7368, longitude: 15.2288 },
+  { slug: 'zielona-gora', name: 'Zielona Góra', admin: 'Lubuskie', country: 'PL', latitude: 51.9356, longitude: 15.5062 },
+  { slug: 'legnica', name: 'Legnica', admin: 'Dolnośląskie', country: 'PL', latitude: 51.2070, longitude: 16.1619 },
+  { slug: 'glogow', name: 'Głogów', admin: 'Dolnośląskie', country: 'PL', latitude: 51.6640, longitude: 16.0844 },
+  { slug: 'opole', name: 'Opole', admin: 'Opolskie', country: 'PL', latitude: 50.6751, longitude: 17.9213 },
+  { slug: 'tarnow', name: 'Tarnów', admin: 'Małopolskie', country: 'PL', latitude: 50.0121, longitude: 20.9858 },
+  { slug: 'sandomierz', name: 'Sandomierz', admin: 'Świętokrzyskie', country: 'PL', latitude: 50.6829, longitude: 21.7497 },
+  { slug: 'kielce', name: 'Kielce', admin: 'Świętokrzyskie', country: 'PL', latitude: 50.8661, longitude: 20.6286 },
+  { slug: 'czestochowa', name: 'Częstochowa', admin: 'Śląskie', country: 'PL', latitude: 50.8118, longitude: 19.1203 },
+  { slug: 'kalisz', name: 'Kalisz', admin: 'Wielkopolskie', country: 'PL', latitude: 51.7611, longitude: 18.0911 },
+  { slug: 'torun', name: 'Toruń', admin: 'Kujawsko-Pomorskie', country: 'PL', latitude: 53.0138, longitude: 18.5984 },
+  { slug: 'bydgoszcz', name: 'Bydgoszcz', admin: 'Kujawsko-Pomorskie', country: 'PL', latitude: 53.1235, longitude: 18.0084 },
+  { slug: 'plock', name: 'Płock', admin: 'Mazowieckie', country: 'PL', latitude: 52.5463, longitude: 19.7065 },
+  { slug: 'radom', name: 'Radom', admin: 'Mazowieckie', country: 'PL', latitude: 51.4027, longitude: 21.1471 },
+  { slug: 'olsztyn', name: 'Olsztyn', admin: 'Warmińsko-Mazurskie', country: 'PL', latitude: 53.7799, longitude: 20.4942 },
+  { slug: 'suwalki', name: 'Suwałki', admin: 'Podlaskie', country: 'PL', latitude: 54.1115, longitude: 22.9309 },
+]
+
+/** Look up any tracked spot (big city or extreme) by slug. */
+export function spotBySlug(slug: string): Place | null {
+  return POLAND_SPOTS.find((c) => c.slug === slug) ?? null
+}
+
 function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms))
 }
@@ -120,14 +152,14 @@ export interface PolandNowEntry {
 
 /** Live: current temp + today's max for all preset cities, in ONE multi-location call. */
 export async function fetchPolandNow(): Promise<PolandNowEntry[]> {
-  const lats = PRESET_CITIES.map((c) => c.latitude).join(',')
-  const lons = PRESET_CITIES.map((c) => c.longitude).join(',')
+  const lats = POLAND_SPOTS.map((c) => c.latitude).join(',')
+  const lons = POLAND_SPOTS.map((c) => c.longitude).join(',')
   const url =
     `${FORECAST}?latitude=${lats}&longitude=${lons}` +
     `&current=temperature_2m&daily=temperature_2m_max&forecast_days=1&timezone=auto`
   const d = await getJSON(url)
   const arr: any[] = Array.isArray(d) ? d : [d]
-  return PRESET_CITIES.map((c, i) => {
+  return POLAND_SPOTS.map((c, i) => {
     const r = arr[i] ?? {}
     return {
       slug: c.slug ?? c.name,

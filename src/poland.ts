@@ -31,6 +31,22 @@ export function recordsForDay(records: CityRecords, monthDay: string): RankedRec
   }))
 }
 
+export interface AbsoluteRecord extends RankedRecord {
+  monthDay: string
+}
+
+/** The single hottest reading across all tracked spots and days (where + when). */
+export function absoluteRecord(records: CityRecords): AbsoluteRecord | null {
+  let best: AbsoluteRecord | null = null
+  for (const md of Object.keys(records.byDay)) {
+    const top = records.byDay[md][0]
+    if (top && (!best || top.t > best.tmax)) {
+      best = { slug: top.c, name: records.cities[top.c] ?? top.c, tmax: top.t, year: top.y, monthDay: md }
+    }
+  }
+  return best
+}
+
 let cache: CityRecords | null = null
 
 /** Fetch the static records dataset once (cached in memory). */

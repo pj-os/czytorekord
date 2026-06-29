@@ -1,9 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
 import { track } from '../analytics'
-import { fetchPolandNow, PRESET_CITIES, type PolandNowEntry } from '../api'
+import { fetchPolandNow, spotBySlug, type PolandNowEntry } from '../api'
+import { dayLabel } from '../format'
 import { thermalForTemp } from '../palette'
-import { loadCityRecords, recordsForDay, type CityRecords } from '../poland'
+import { absoluteRecord, loadCityRecords, recordsForDay, type CityRecords } from '../poland'
 import type { Place } from '../types'
+
+function mdLabel(monthDay: string): string {
+  const [m, d] = monthDay.split('-').map(Number)
+  return dayLabel(new Date(2024, m - 1, d))
+}
 
 interface Props {
   monthDay: string
@@ -45,8 +51,10 @@ export default function PolandPanel({ monthDay, label, isToday, onPickCity }: Pr
     [data, monthDay],
   )
 
+  const abs = useMemo(() => (data ? absoluteRecord(data) : null), [data])
+
   function pick(slug: string) {
-    const p = PRESET_CITIES.find((c) => c.slug === slug)
+    const p = spotBySlug(slug)
     if (p) {
       track('poland_pick', { place: p.name })
       onPickCity(p)
@@ -74,7 +82,18 @@ export default function PolandPanel({ monthDay, label, isToday, onPickCity }: Pr
         <Ranking rows={records} onPick={pick} showYear />
       </div>
 
-      <p className="poland-foot">Wśród 12 śledzonych miast · dane od 1940. Kliknij, by otworzyć.</p>
+      {abs && (
+        <button className="poland-abs" onClick={() => pick(abs.slug)}>
+          <span className="poland-abs-label">🔥 Absolutny rekord</span>
+          <span className="poland-abs-val">
+            <b>{abs.name}</b> {abs.tmax.toFixed(1)}°C · {mdLabel(abs.monthDay)} {abs.year}
+          </span>
+        </button>
+      )}
+
+      <p className="poland-foot">
+        Wśród ~30 miejscowości (z gorącymi punktami jak Słubice) · dane od 1940. Kliknij, by otworzyć.
+      </p>
     </div>
   )
 }
